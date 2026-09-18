@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+alembic
+pymysql
+pydantic-settings
+redis
+python-dotenv
+pwdlib[argon2]
+python-jose[cryptography]
+email-validator
+pytest
+httpx
+pytest-asyncio

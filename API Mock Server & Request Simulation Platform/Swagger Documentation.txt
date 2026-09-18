@@ -1,0 +1,1491 @@
+# Swagger / OpenAPI Documentation
+
+## API Mock Server & Request Simulation Platform
+
+---
+
+## 1. Overview
+
+The API Mock Server & Request Simulation Platform provides interactive API documentation using **FastAPI Swagger/OpenAPI**.
+
+Swagger UI allows developers to:
+
+* View available API endpoints
+* Understand request parameters
+* View request and response schemas
+* Test APIs directly from the browser
+* Authenticate using JWT
+* Test protected endpoints
+* Verify HTTP status codes
+* Test validation and error responses
+
+---
+
+# 2. Swagger URLs
+
+After starting the FastAPI backend:
+
+```powershell
+python -m uvicorn app.main:app --reload
+```
+
+The application runs at:
+
+```text
+http://127.0.0.1:8000
+```
+
+### Swagger UI
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+Swagger UI provides interactive API testing.
+
+### ReDoc
+
+```text
+http://127.0.0.1:8000/redoc
+```
+
+ReDoc provides a structured documentation view.
+
+### OpenAPI JSON
+
+```text
+http://127.0.0.1:8000/openapi.json
+```
+
+The OpenAPI JSON document can be imported into API tools that support OpenAPI.
+
+---
+
+# 3. Starting the Backend
+
+Navigate to the backend directory:
+
+```powershell
+cd C:\Users\asus\Desktop\api-mock-server\backend
+```
+
+Activate the virtual environment:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+Start FastAPI:
+
+```powershell
+python -m uvicorn app.main:app --reload
+```
+
+Expected output:
+
+```text
+INFO:     Uvicorn running on http://127.0.0.1:8000
+```
+
+Open Swagger:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+---
+
+# 4. Swagger API Groups
+
+The Swagger interface organizes APIs into functional groups.
+
+The main groups are:
+
+```text
+Authentication
+Mock APIs
+```
+
+Additional groups can be added as the corresponding project features are implemented.
+
+---
+
+# 5. Authentication
+
+The application uses **JWT Bearer Authentication**.
+
+Swagger provides an **Authorize** button that can be used to authenticate the current Swagger session.
+
+---
+
+## 5.1 OAuth2 Password Flow
+
+The authentication configuration uses:
+
+```text
+OAuth2PasswordBearer
+```
+
+Token URL:
+
+```text
+/auth/login
+```
+
+Flow:
+
+```text
+password
+```
+
+Swagger displays:
+
+```text
+OAuth2PasswordBearer (OAuth2, password)
+
+Token URL: /auth/login
+
+username:
+password:
+```
+
+---
+
+# 6. Register User
+
+## Endpoint
+
+```http
+POST /auth/register
+```
+
+### Purpose
+
+Creates a new user account.
+
+### Request Body
+
+```json
+{
+  "username": "testuser",
+  "email": "testuser@example.com",
+  "password": "Test@12345"
+}
+```
+
+### Example
+
+In Swagger:
+
+```text
+Authentication
+    ↓
+POST /auth/register
+    ↓
+Try it out
+    ↓
+Enter request body
+    ↓
+Execute
+```
+
+### Successful Response
+
+HTTP Status:
+
+```text
+201 Created
+```
+
+Example:
+
+```json
+{
+  "id": 1,
+  "username": "testuser",
+  "email": "testuser@example.com",
+  "is_active": true
+}
+```
+
+### Possible Errors
+
+#### Username already exists
+
+```text
+409 Conflict
+```
+
+Example:
+
+```json
+{
+  "detail": "Username already exists"
+}
+```
+
+#### Email already exists
+
+```text
+409 Conflict
+```
+
+Example:
+
+```json
+{
+  "detail": "Email already exists"
+}
+```
+
+#### Invalid request
+
+```text
+422 Unprocessable Content
+```
+
+---
+
+# 7. Login
+
+## Endpoint
+
+```http
+POST /auth/login
+```
+
+### Purpose
+
+Authenticates the user and generates a JWT access token.
+
+### Authentication Format
+
+The endpoint uses OAuth2 password form data.
+
+The request contains:
+
+```text
+username
+password
+```
+
+### Swagger Testing
+
+Open:
+
+```text
+Authentication
+    ↓
+POST /auth/login
+    ↓
+Try it out
+```
+
+Enter the required credentials.
+
+### Example
+
+```text
+username: testuser
+password: Test@12345
+```
+
+### Successful Response
+
+HTTP Status:
+
+```text
+200 OK
+```
+
+Example:
+
+```json
+{
+  "access_token": "YOUR_JWT_ACCESS_TOKEN",
+  "token_type": "bearer"
+}
+```
+
+---
+
+# 8. Swagger Authorization
+
+After obtaining a JWT token, click:
+
+```text
+Authorize
+```
+
+Swagger will display the OAuth2 authentication dialog.
+
+Enter:
+
+```text
+Username: testuser
+Password: Test@12345
+```
+
+Click:
+
+```text
+Authorize
+```
+
+After successful authentication, Swagger stores the authentication information for protected requests.
+
+Protected requests will contain:
+
+```http
+Authorization: Bearer <JWT_TOKEN>
+```
+
+---
+
+# 9. Current User
+
+## Endpoint
+
+```http
+GET /auth/me
+```
+
+### Purpose
+
+Returns information about the currently authenticated user.
+
+### Authentication
+
+Required.
+
+### Swagger Steps
+
+```text
+Authorize
+    ↓
+Authentication
+    ↓
+GET /auth/me
+    ↓
+Try it out
+    ↓
+Execute
+```
+
+### Successful Response
+
+HTTP Status:
+
+```text
+200 OK
+```
+
+Example:
+
+```json
+{
+  "id": 1,
+  "username": "testuser",
+  "email": "testuser@example.com",
+  "is_active": true
+}
+```
+
+### Unauthorized Response
+
+If a valid JWT token is not provided:
+
+```text
+401 Unauthorized
+```
+
+---
+
+# 10. Mock API Management
+
+The Mock API management section allows authenticated users to create and manage mock API definitions.
+
+The API definitions are stored in MySQL and are not hardcoded into the application.
+
+---
+
+# 11. Create Mock API
+
+## Endpoint
+
+```http
+POST /mock-apis
+```
+
+### Purpose
+
+Creates a new mock API definition.
+
+### Authentication
+
+Required.
+
+### Example Request
+
+```json
+{
+  "name": "Users API",
+  "http_method": "GET",
+  "endpoint_path": "/users",
+  "description": "Mock users endpoint",
+  "is_active": true
+}
+```
+
+### Successful Response
+
+```text
+201 Created
+```
+
+Example:
+
+```json
+{
+  "id": 1,
+  "name": "Users API",
+  "http_method": "GET",
+  "endpoint_path": "/users",
+  "description": "Mock users endpoint",
+  "is_active": true
+}
+```
+
+---
+
+# 12. List Mock APIs
+
+## Endpoint
+
+```http
+GET /mock-apis
+```
+
+### Purpose
+
+Returns mock APIs available to the authenticated user.
+
+### Authentication
+
+Required.
+
+### Example
+
+```text
+GET /mock-apis
+```
+
+### Successful Response
+
+```text
+200 OK
+```
+
+Example:
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Users API",
+    "http_method": "GET",
+    "endpoint_path": "/users",
+    "description": "Mock users endpoint",
+    "is_active": true
+  }
+]
+```
+
+---
+
+# 13. Get Mock API
+
+## Endpoint
+
+```http
+GET /mock-apis/{api_id}
+```
+
+### Path Parameter
+
+```text
+api_id
+```
+
+Example:
+
+```text
+GET /mock-apis/1
+```
+
+### Successful Response
+
+```text
+200 OK
+```
+
+### Not Found
+
+```text
+404 Not Found
+```
+
+Example:
+
+```json
+{
+  "detail": "Mock API not found"
+}
+```
+
+---
+
+# 14. Update Mock API
+
+## Endpoint
+
+```http
+PUT /mock-apis/{api_id}
+```
+
+### Purpose
+
+Updates an existing mock API definition.
+
+### Example
+
+```text
+PUT /mock-apis/1
+```
+
+Request:
+
+```json
+{
+  "name": "Updated Users API",
+  "http_method": "GET",
+  "endpoint_path": "/users",
+  "description": "Updated mock users endpoint",
+  "is_active": true
+}
+```
+
+### Successful Response
+
+```text
+200 OK
+```
+
+---
+
+# 15. Delete Mock API
+
+## Endpoint
+
+```http
+DELETE /mock-apis/{api_id}
+```
+
+### Purpose
+
+Deletes a mock API definition.
+
+### Example
+
+```text
+DELETE /mock-apis/1
+```
+
+### Successful Response
+
+```text
+204 No Content
+```
+
+---
+
+# 16. Dynamic Mock Endpoints
+
+The platform dynamically exposes configured mock endpoints.
+
+Example definitions:
+
+```text
+GET /mock/users
+
+POST /mock/orders
+
+GET /mock/products/{id}
+```
+
+The actual available dynamic endpoints depend on the API definitions stored in the database.
+
+They are **not hardcoded** into the FastAPI source code.
+
+---
+
+# 17. Dynamic GET Endpoint Example
+
+Suppose a user creates:
+
+```text
+Method:
+GET
+
+Path:
+/mock/users
+```
+
+The platform exposes:
+
+```http
+GET /mock/users
+```
+
+The configured response is returned when the endpoint is called.
+
+Example:
+
+```json
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "John"
+    },
+    {
+      "id": 2,
+      "name": "Jane"
+    }
+  ]
+}
+```
+
+---
+
+# 18. Dynamic POST Endpoint Example
+
+Suppose the user creates:
+
+```text
+Method:
+POST
+
+Path:
+/mock/orders
+```
+
+The endpoint becomes:
+
+```http
+POST /mock/orders
+```
+
+A request body can be configured through the request schema.
+
+Example:
+
+```json
+{
+  "product_id": 101,
+  "quantity": 2
+}
+```
+
+The configured mock response is returned.
+
+---
+
+# 19. Path Parameters
+
+Dynamic endpoints can contain path parameters.
+
+Example:
+
+```text
+GET /mock/products/{id}
+```
+
+Request:
+
+```http
+GET /mock/products/100
+```
+
+The value:
+
+```text
+100
+```
+
+is supplied as the `id` path parameter.
+
+---
+
+# 20. Request Parameters
+
+Mock API definitions can configure request parameters.
+
+Example:
+
+```text
+GET /mock/products
+```
+
+Query parameters:
+
+```text
+page
+limit
+category
+```
+
+Example request:
+
+```http
+GET /mock/products?page=1&limit=10&category=electronics
+```
+
+The incoming parameters can be validated against the configured request schema.
+
+---
+
+# 21. Request Headers
+
+Mock APIs can define expected request headers.
+
+Example:
+
+```http
+Authorization: Bearer <token>
+Content-Type: application/json
+X-API-Key: test-key
+```
+
+The platform validates incoming requests according to the configured request definition.
+
+---
+
+# 22. Request Body Schema
+
+POST, PUT, PATCH, and other applicable endpoints can define a request body schema.
+
+Example:
+
+```json
+{
+  "name": "John",
+  "email": "john@example.com",
+  "age": 25
+}
+```
+
+The configured schema determines which fields and structures are expected.
+
+---
+
+# 23. Request Validation
+
+Incoming requests are validated against the configured request schema.
+
+For example, if the API expects:
+
+```json
+{
+  "name": "John",
+  "age": 25
+}
+```
+
+and the client sends an invalid structure, the platform returns a validation error.
+
+Example:
+
+```text
+422 Unprocessable Content
+```
+
+The response contains information about the validation failure.
+
+---
+
+# 24. Response Configuration
+
+Each mock API can configure:
+
+* Response Body
+* Response Headers
+* HTTP Status Code
+* Response Delay
+
+Example response body:
+
+```json
+{
+  "message": "User created successfully",
+  "id": 101
+}
+```
+
+Response status:
+
+```text
+201
+```
+
+Response header:
+
+```text
+Content-Type: application/json
+```
+
+Response delay:
+
+```text
+500 ms
+```
+
+---
+
+# 25. Response Scenarios
+
+The platform supports different response scenarios.
+
+## Success Response
+
+Example:
+
+```text
+200 OK
+```
+
+Response:
+
+```json
+{
+  "message": "Success"
+}
+```
+
+---
+
+## Validation Error
+
+Example:
+
+```text
+422 Unprocessable Content
+```
+
+Response:
+
+```json
+{
+  "detail": "Request validation failed"
+}
+```
+
+---
+
+## Unauthorized Response
+
+Example:
+
+```text
+401 Unauthorized
+```
+
+Response:
+
+```json
+{
+  "detail": "Authentication required"
+}
+```
+
+---
+
+## Not Found Response
+
+Example:
+
+```text
+404 Not Found
+```
+
+Response:
+
+```json
+{
+  "detail": "Resource not found"
+}
+```
+
+---
+
+## Server Error
+
+Example:
+
+```text
+500 Internal Server Error
+```
+
+Response:
+
+```json
+{
+  "detail": "Internal server error"
+}
+```
+
+---
+
+## Custom Response
+
+Users can configure custom:
+
+```text
+HTTP Status Code
+Response Headers
+Response Body
+Response Delay
+```
+
+Example:
+
+```text
+Status:
+202
+```
+
+Response:
+
+```json
+{
+  "message": "Request accepted for processing"
+}
+```
+
+---
+
+# 26. API Versioning
+
+The platform supports API versioning.
+
+Example:
+
+```text
+/v1/users
+/v2/users
+```
+
+Different API versions can have different:
+
+* Request schemas
+* Response templates
+* Status codes
+* Headers
+* Authentication requirements
+
+---
+
+# 27. Endpoint-Level Authentication
+
+Mock APIs can be configured with authentication options.
+
+A public API can be accessed without authentication.
+
+Example:
+
+```text
+GET /mock/public-products
+```
+
+A private API requires authentication.
+
+Example:
+
+```text
+GET /mock/private-orders
+```
+
+Requests without the required authentication receive:
+
+```text
+401 Unauthorized
+```
+
+---
+
+# 28. API Permissions
+
+API permissions control access to private mock APIs.
+
+Permissions are associated with the API and authorized users.
+
+Unauthorized users should not be able to access private mock endpoints.
+
+---
+
+# 29. Pagination
+
+API listing endpoints support pagination where implemented.
+
+Example:
+
+```text
+GET /mock-apis?page=1&limit=10
+```
+
+Parameters:
+
+```text
+page
+limit
+```
+
+Example:
+
+```text
+page = 1
+limit = 10
+```
+
+---
+
+# 30. Filtering
+
+Mock API and request history data can be filtered using supported query parameters.
+
+Example:
+
+```text
+GET /mock-apis?http_method=GET
+```
+
+Filtering should only use parameters supported by the corresponding endpoint.
+
+---
+
+# 31. Request History
+
+The platform records mock API requests.
+
+Stored information includes:
+
+```text
+Endpoint
+HTTP Method
+Request Parameters
+Request Body
+Response Status
+Response Time
+Timestamp
+```
+
+Example history record:
+
+```json
+{
+  "endpoint": "/mock/users",
+  "method": "GET",
+  "request_parameters": {},
+  "request_body": null,
+  "response_status": 200,
+  "response_time": 25,
+  "timestamp": "2026-09-18T10:30:00"
+}
+```
+
+---
+
+# 32. Dashboard Metrics
+
+The dashboard provides information about API usage.
+
+Metrics include:
+
+```text
+Total Mock APIs
+Active APIs
+Total Requests
+Error Requests
+Most Used Endpoints
+Average Response Time
+```
+
+Example:
+
+```text
+Total Mock APIs       25
+Active APIs           20
+Total Requests        1,250
+Error Requests        75
+Average Response Time 42 ms
+```
+
+---
+
+# 33. HTTP Status Codes
+
+The platform can return configured HTTP status codes.
+
+Common codes include:
+
+| Status | Meaning               |
+| ------ | --------------------- |
+| 200    | OK                    |
+| 201    | Created               |
+| 202    | Accepted              |
+| 204    | No Content            |
+| 400    | Bad Request           |
+| 401    | Unauthorized          |
+| 403    | Forbidden             |
+| 404    | Not Found             |
+| 409    | Conflict              |
+| 422    | Unprocessable Content |
+| 500    | Internal Server Error |
+
+---
+
+# 34. Common Swagger Errors
+
+## 401 Unauthorized
+
+Possible causes:
+
+* JWT token missing
+* JWT token expired
+* Invalid JWT token
+* Protected endpoint accessed without authentication
+
+Solution:
+
+```text
+Click Authorize
+```
+
+and authenticate again.
+
+---
+
+## 404 Not Found
+
+Possible causes:
+
+* Incorrect endpoint
+* Incorrect API ID
+* Mock API does not exist
+* Dynamic mock endpoint is not configured
+
+Verify the endpoint path in Swagger.
+
+---
+
+## 409 Conflict
+
+Usually indicates duplicate data.
+
+Example:
+
+```text
+Username already exists
+```
+
+or:
+
+```text
+Email already exists
+```
+
+---
+
+## 422 Unprocessable Content
+
+This occurs when the request does not match the expected request format.
+
+Check:
+
+* Required fields
+* Field names
+* Field types
+* Request body format
+* OAuth2 login form fields
+
+For OAuth2 login, use:
+
+```text
+username
+password
+```
+
+rather than sending a JSON login body.
+
+---
+
+## 500 Internal Server Error
+
+Indicates an unexpected server-side error.
+
+Check the FastAPI/Uvicorn terminal logs for the actual exception.
+
+---
+
+# 35. Recommended Swagger Testing Order
+
+Follow this order when testing the backend.
+
+```text
+1. Start MySQL
+       ↓
+2. Start Redis
+       ↓
+3. Start FastAPI
+       ↓
+4. Open Swagger
+       ↓
+5. Register User
+       ↓
+6. Login / Authorize
+       ↓
+7. Test /auth/me
+       ↓
+8. Create Mock API
+       ↓
+9. List Mock APIs
+       ↓
+10. Get Mock API
+       ↓
+11. Update Mock API
+       ↓
+12. Execute Dynamic Mock API
+       ↓
+13. Test Request Validation
+       ↓
+14. Test Response Scenarios
+       ↓
+15. Test Private API Authentication
+       ↓
+16. Verify Request History
+       ↓
+17. Verify Dashboard Metrics
+```
+
+---
+
+# 36. Swagger Testing Checklist
+
+## Authentication
+
+```text
+[ ] Register
+[ ] Login
+[ ] Authorize
+[ ] Get Current User
+[ ] Test unauthorized request
+```
+
+## API Definition
+
+```text
+[ ] Create Mock API
+[ ] List Mock APIs
+[ ] Get Mock API
+[ ] Update Mock API
+[ ] Delete Mock API
+```
+
+## Dynamic Execution
+
+```text
+[ ] GET endpoint
+[ ] POST endpoint
+[ ] Path parameter
+[ ] Request parameters
+[ ] Request headers
+[ ] Request body
+```
+
+## Response Scenarios
+
+```text
+[ ] Success
+[ ] Validation Error
+[ ] Unauthorized
+[ ] Not Found
+[ ] Server Error
+[ ] Custom Response
+```
+
+## Additional Features
+
+```text
+[ ] API Versioning
+[ ] Endpoint Authentication
+[ ] API Permissions
+[ ] Request Validation
+[ ] Pagination
+[ ] Filtering
+[ ] Request History
+[ ] Dashboard Metrics
+```
+
+---
+
+# 37. Swagger/OpenAPI Export
+
+The OpenAPI specification is available at:
+
+```text
+http://127.0.0.1:8000/openapi.json
+```
+
+This specification can be used with API development and testing tools that support OpenAPI.
+
+---
+
+# 38. Troubleshooting
+
+### FastAPI does not start
+
+Check the virtual environment:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+Install dependencies:
+
+```powershell
+pip install -r requirements.txt
+```
+
+Start using:
+
+```powershell
+python -m uvicorn app.main:app --reload
+```
+
+---
+
+### MySQL connection error
+
+Verify that MySQL is running and that the database configuration in `.env` matches the Docker/MySQL configuration.
+
+---
+
+### Redis connection error
+
+Verify Redis is running:
+
+```powershell
+docker compose ps
+```
+
+Check Redis logs:
+
+```powershell
+docker compose logs redis
+```
+
+---
+
+### Swagger is not loading
+
+Verify FastAPI is running:
+
+```text
+http://127.0.0.1:8000
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+---
+
+# 39. API Documentation Summary
+
+The Swagger documentation provides an interactive interface for testing the API Mock Server.
+
+The main workflow is:
+
+```text
+Register
+   ↓
+Login
+   ↓
+Authorize
+   ↓
+Create Mock API
+   ↓
+Configure Request
+   ↓
+Configure Response
+   ↓
+Execute Dynamic Endpoint
+   ↓
+Validate Request
+   ↓
+Return Configured Response
+   ↓
+Store Request History
+   ↓
+View Dashboard Metrics
+```
+
+Swagger is the primary interactive API documentation and testing interface for the FastAPI backend.
+
+---
+
+# 40. Quick Access
+
+| Resource     | URL                                  |
+| ------------ | ------------------------------------ |
+| Backend      | `http://127.0.0.1:8000`              |
+| Swagger UI   | `http://127.0.0.1:8000/docs`         |
+| ReDoc        | `http://127.0.0.1:8000/redoc`        |
+| OpenAPI JSON | `http://127.0.0.1:8000/openapi.json` |
+
+---
+
+## Project
+
+**API Mock Server & Request Simulation Platform**
+
+Backend:
+
+```text
+Python 3.14
+FastAPI
+SQLAlchemy
+Alembic
+Pydantic
+Redis
+JWT
+```
+
+Frontend:
+
+```text
+React
+Vite
+TypeScript
+Material UI
+Axios
+React Router
+```
+
+Database:
+
+```text
+MySQL 8.0
+```
